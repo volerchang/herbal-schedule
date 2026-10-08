@@ -44,7 +44,7 @@ header p .sep{margin:0 14px;color:#9aa79b}
 .inner .leaf{position:absolute;right:10px;bottom:-6px;width:80px;opacity:.35}
 label.f{display:flex;flex-direction:column;gap:5px;font-size:14px;color:var(--ink);font-weight:500}
 input,select{font:inherit;color:var(--ink);background:var(--input);border:1px solid #e6e1c8;border-radius:7px;padding:6px 10px}
-#gStart{font-size:17px;padding:7px 12px;min-width:230px}
+.inner input[type=date]{min-width:170px}
 input[type=number]{width:66px;text-align:center}
 .note{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
 .note i{flex:none;width:22px;height:22px;border-radius:50%;background:#7c837d;color:#fff;font-style:normal;font-weight:700;display:grid;place-items:center;font-size:13px;margin-top:1px}
@@ -83,7 +83,7 @@ td.date{white-space:nowrap;text-align:center}
 .prod .em{font-size:20px}
 .prod a{color:inherit;text-decoration:none}.prod a:hover{text-decoration:underline}
 .badge{display:inline-block;padding:3px 14px;border-radius:999px;font-size:14px;white-space:nowrap;border:1px solid transparent}
-.st-未開始{background:#f0f1ee;border-color:#dcdfd9}.st-進行中{background:#dbeaf7;border-color:#bcd6ee}.st-完成,.st-已完工{background:#dcedd6;border-color:#bcdcb1}.st-延遲,.st-有延遲{background:#f8dcd2;border-color:#efbcaa}
+.st-未排程{background:#fff;border:1px dashed #c9cdc6;color:var(--muted)}.st-未開始{background:#f0f1ee;border-color:#dcdfd9}.st-進行中{background:#dbeaf7;border-color:#bcd6ee}.st-完成,.st-已完工{background:#dcedd6;border-color:#bcdcb1}.st-延遲,.st-有延遲{background:#f8dcd2;border-color:#efbcaa}
 .std th{background:var(--deep);color:#fff;font-weight:700;padding:7px 12px}
 .std td{padding:5px 12px;border-bottom:0}
 .std tr:nth-child(odd) td{background:var(--rose)}
@@ -154,8 +154,8 @@ const PHASES=[
  {n:1,t:"備料完成",ic:"leaf"},{n:2,t:"加工完成",ic:"gear"},{n:3,t:"混合完成",ic:"bowl"},
  {n:4,t:"茶包製作完成",ic:"bag"},{n:5,t:"包裝完成",ic:"box"}];
 const PEND=[0,1,2,4,5]; // task index whose end = phase end
-const STATUSES=["未開始","進行中","完成","延遲"];
-const KEY="herbal-schedule-v1";
+const STATUSES=["","未開始","進行中","完成","延遲"];
+const KEY="herbal-schedule-v2";
 
 const I={
  gear:'<svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
@@ -182,11 +182,17 @@ function defaults(){
       {d:"2026-12-25",n:"行憲紀念日"},
       {d:"2027-01-01",n:"開國紀念日"},
     ],
-    prod:Object.fromEntries(PRODUCTS.map(p=>[p,{start:"",rows:TASKS.map(t=>({days:"",unit:t.unit,as:"",ae:"",st:"未開始",note:""}))}]))
+    prod:Object.fromEntries(PRODUCTS.map(p=>[p,{start:"",rows:TASKS.map(t=>({days:"",unit:t.unit,as:"",ae:"",st:"",note:""}))}]))
   };
 }
+function initial(){
+  const d=defaults(),P=d.prod["酸棗眠雲"];
+  P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
+  P.rows.slice(1).forEach(r=>r.st="未開始");
+  return d;
+}
 let S;
-try{S=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){S=defaults()}
+try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 const pd=s=>{if(!s)return null;const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
@@ -200,16 +206,18 @@ function nextWork(d,H){const x=new Date(d);while(!isWork(x,H))x.setDate(x.getDat
 function addWork(d,n,H){const x=nextWork(d,H);let k=n;while(k>0){x.setDate(x.getDate()+1);if(isWork(x,H))k--}return x}
 function plan(p){
   const H=holSet(),P=S.prod[p];
-  let cur=pd(P.start||S.start);if(!cur)return[];
+  let cur=pd(P.start);if(!cur)return[];
   return TASKS.map((t,i)=>{
-    const days=Math.max(1,Number(P.rows[i].days||S.std[i])||1);
-    const s=nextWork(cur,H),e=addWork(s,days-1,H);
+    const r=P.rows[i],days=Math.max(1,Number(r.days||S.std[i])||1);
+    const s=r.as?pd(r.as):nextWork(cur,H);
+    const e=r.ae?pd(r.ae):addWork(s,days-1,H);
     cur=new Date(e);cur.setDate(cur.getDate()+1);
     return{days,s,e};
   });
 }
 function prodStatus(p){
-  const r=S.prod[p].rows.map(x=>x.st);
+  if(!S.prod[p].start)return"未排程";
+  const r=S.prod[p].rows.map(x=>x.st||"未開始");
   if(r.every(x=>x==="完成"))return"已完工";
   if(r.includes("延遲"))return"有延遲";
   if(r.every(x=>x==="未開始"))return"未開始";
@@ -227,21 +235,23 @@ function renderTabs(){$("#tabs").innerHTML=VIEWS.map(v=>`<button class="${v===cu
 function vOverview(){
   const plans=PRODUCTS.map(plan);
   const last=plans.map(pl=>pl.length?pl[5].e:null).reduce((a,b)=>!a||b>a?b:a,null);
-  const st=pd(S.start);
+  const starts=plans.filter(pl=>pl.length).map(pl=>pl[0].s);
+  const st=starts.length?starts.reduce((a,b)=>b<a?b:a):null;
+  const nSched=starts.length;
   const total=S.std.reduce((a,b)=>a+Number(b||0),0);
   const done=PRODUCTS.reduce((a,p)=>a+S.prod[p].rows.filter(r=>r.st==="完成").length,0);
   const all=PRODUCTS.length*TASKS.length, pct=Math.round(done/all*100);
   return `
   <section class="card">${hdr("gear","基本設定")}
     <div class="inner">
-      <label class="f">預計開工日（下單日）<input type="date" id="gStart" value="${S.start}"></label>
-      <div class="note"><i>i</i><div>實際排程可能受原料、機台與產能影響而調整，<br>系統已自動跳過週末與國定假日。</div></div>
+      ${PRODUCTS.map(p=>`<label class="f">${EMOJI[p]} ${p} 開工日<input type="date" data-pstart="${p}" value="${S.prod[p].start}"></label>`).join("")}
+      <div class="note"><i>i</i><div>開工日空白代表尚未排程。填入實際完成日期後，<br>後續階段會從該日期自動往後排，並跳過週末與國定假日。</div></div>
       ${LEAFSVG}
     </div>
   </section>
   <section class="kpis">
-    <div class="kpi k1">${I.cal}<div><div class="t">開工日</div><div class="v"><b>${st?`${st.getMonth()+1}/${st.getDate()}`:"—"}</b>${st?`<span class="wk">週${WK[st.getDay()]}</span>`:""}</div></div></div>
-    <div class="kpi k2">${I.flag}<div><div class="t">全部預計完工</div><div class="v"><b>${last?`${last.getMonth()+1}/${last.getDate()}`:"—"}</b>${last?`<span class="wk">週${WK[last.getDay()]}</span>`:""}</div></div></div>
+    <div class="kpi k1">${I.cal}<div><div class="t">最早開工日</div><div class="v"><b>${st?`${st.getMonth()+1}/${st.getDate()}`:"—"}</b>${st?`<span class="wk">週${WK[st.getDay()]}</span>`:""}</div></div></div>
+    <div class="kpi k2">${I.flag}<div><div class="t">已排程產品預計完工（${nSched} / ${PRODUCTS.length}）</div><div class="v"><b>${last?`${last.getMonth()+1}/${last.getDate()}`:"—"}</b>${last?`<span class="wk">週${WK[last.getDay()]}</span>`:""}</div></div></div>
     <div class="kpi k3">${I.clock}<div><div class="t">標準作業天數</div><div class="v"><b>${total} 個工作天</b></div></div></div>
     <div class="kpi k4">${I.cube}<div><div class="t">已完成作業項目</div><div class="v"><b>${done} / ${all}</b></div></div>
       <div class="ring" style="background:conic-gradient(#a33a37 ${pct*3.6}deg,#d9d9d6 0)"><span>${pct}%</span></div></div>
@@ -251,7 +261,10 @@ function vOverview(){
     <tr><th>產品</th><th class="c">開工日</th>
       ${PHASES.map((ph,k)=>`<th class="c chev ph${ph.n} ${k===0?"first":""}"><span class="hi">${I[ph.ic]}<span class="num">${ph.n}</span>${ph.t}</span></th>`).join("")}
       <th class="c chev ph6">已完成</th><th class="c">狀態</th></tr>
-    ${PRODUCTS.map((p,i)=>{const pl=plans[i];if(!pl.length)return"";const s=prodStatus(p);
+    ${PRODUCTS.map((p,i)=>{const pl=plans[i];const s=prodStatus(p);
+      if(!pl.length)return `<tr><td><span class="prod"><span class="em">${EMOJI[p]}</span><a href="#" data-go="${p}">${p}</a></span></td>
+      <td class="date">—</td>${PEND.map(()=>`<td class="date">—</td>`).join("")}<td class="c">—</td>
+      <td class="c"><span class="badge st-${s}">${s}</span></td></tr>`;
       return `<tr><td><span class="prod"><span class="em">${EMOJI[p]}</span><a href="#" data-go="${p}">${p}</a></span></td>
       <td class="date">${show(pl[0].s)}</td>
       ${PEND.map(k=>`<td class="date">${show(pl[k].e)}</td>`).join("")}
@@ -273,8 +286,8 @@ function vProduct(p){
   const P=S.prod[p],pl=plan(p);
   return `<section class="card">${hdr("gear",`${EMOJI[p]} ${p}　製作時程表`)}
     <div class="inner">
-      <label class="f">本產品開工日<input type="date" data-pstart="${p}" value="${P.start||S.start}"></label>
-      ${P.start?`<button class="btn" data-pclear="${p}">改回與總覽相同</button>`:`<div class="note"><i>i</i><div>預設同總覽開工日；如需錯開可直接修改。</div></div>`}
+      <label class="f">本產品開工日<input type="date" data-pstart="${p}" value="${P.start}"></label>
+      <div class="note"><i>i</i><div>${P.start?"填入實際完成日期後，後續階段會自動從該日期往後排。":"尚未排程，輸入開工日即自動排出各階段日期。"}</div></div>
       <div style="margin-left:auto;text-align:right"><div class="muted">預計完工</div><b style="font-size:24px;color:var(--deep)">${pl.length?big(pl[5].e):"—"}</b></div>
     </div>
   </section>
@@ -289,7 +302,7 @@ function vProduct(p){
       <td class="date">${x?show(x.s):"—"}</td><td class="date">${x?show(x.e):"—"}</td>
       <td class="c"><input type="date" data-p="${p}" data-i="${i}" data-k="as" value="${r.as}"></td>
       <td class="c"><input type="date" class="${late?"late":""}" data-p="${p}" data-i="${i}" data-k="ae" value="${r.ae}"></td>
-      <td class="c"><select data-p="${p}" data-i="${i}" data-k="st" class="badge st-${r.st}">${STATUSES.map(s=>`<option ${s===r.st?"selected":""}>${s}</option>`).join("")}</select></td>
+      <td class="c"><select data-p="${p}" data-i="${i}" data-k="st" class="badge st-${r.st}">${STATUSES.map(s=>`<option value="${s}" ${s===r.st?"selected":""}>${s||"—"}</option>`).join("")}</select></td>
       <td><input data-p="${p}" data-i="${i}" data-k="note" value="${esc(r.note)}" style="width:120px"></td></tr>`}).join("")}
     </table></div>
     <p class="muted pad" style="margin:0">填入實際開始會自動標為「進行中」，填入實際完成會標為「完成」；實際完成晚於預計時以紅字顯示。修改本頁天數只影響此產品。</p>
@@ -304,6 +317,7 @@ function vGantt(){
   const head=days.map((d,k)=>`<th class="d ${d.getDate()===1||k===0?"mon":""}">${d.getDate()===1||k===0?`<b>${d.getMonth()+1}月</b><br>`:""}${d.getDate()}<br>${WK[d.getDay()]}</th>`).join("");
   let body="";
   PRODUCTS.forEach((p,pi)=>{
+    if(!plans[pi].length){body+=`<tr class="grp"><td class="lbl">${EMOJI[p]} ${p}　<span class="muted">未排程</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;return}
     body+=`<tr class="grp"><td class="lbl">${EMOJI[p]} ${p}　<span class="muted">完工 ${show(plans[pi][5].e)}</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;
     TASKS.forEach((t,i)=>{const x=plans[pi][i];
       body+=`<tr><td class="lbl">${t.it}</td>${days.map(d=>{const on=d>=x.s&&d<=x.e&&isWork(d,H);const off=!isWork(d,H);
@@ -337,18 +351,17 @@ document.addEventListener("click",e=>{
   else if(t.dataset.hdel){S.holidays.splice(+t.dataset.hdel,1);save();render()}
   else if(t.id==="hAdd"){S.holidays.push({d:"",n:""});save();render()}
   else if(t.id==="printBtn"){window.print()}
-  else if(t.id==="resetBtn"){if(confirm("確定要清除所有填寫內容並恢復預設值？")){S=defaults();save();render()}}
+  else if(t.id==="resetBtn"){if(confirm("確定要清除所有填寫內容並恢復預設值？")){S=initial();save();render()}}
 });
 document.addEventListener("change",e=>{
   const t=e.target,d=t.dataset;
-  if(t.id==="gStart")S.start=t.value;
-  else if(d.std!==undefined)S.std[+d.std]=Math.max(1,+t.value||1);
-  else if(d.pstart){S.prod[d.pstart].start=t.value===S.start?"":t.value}
+  if(d.std!==undefined)S.std[+d.std]=Math.max(1,+t.value||1);
+  else if(d.pstart){const P=S.prod[d.pstart];P.start=t.value;if(t.value)P.rows.forEach(r=>{if(!r.st)r.st="未開始"})}
   else if(d.p){const r=S.prod[d.p].rows[+d.i];
     if(d.k==="days")r.days=(+t.value===S.std[+d.i]||!t.value)?"":Math.max(1,+t.value);
     else r[d.k]=t.value;
     if(d.k==="ae"&&t.value&&r.st!=="完成")r.st="完成";
-    if(d.k==="as"&&t.value&&r.st==="未開始")r.st="進行中";
+    if(d.k==="as"&&t.value&&(!r.st||r.st==="未開始"))r.st="進行中";
   }
   else if(d.h!==undefined){S.holidays[+d.h][d.hk]=t.value}
   else return;
