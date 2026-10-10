@@ -123,6 +123,11 @@ td.date{white-space:nowrap;text-align:center}
 footer{margin-top:24px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center}
 @media print{.tabs,.noprint{display:none!important}.view.hidden{display:block!important}.card{break-inside:avoid}body{background:#fff}}
 @media (max-width:760px){.hero-img{opacity:.35;max-width:80%}.tabs button{padding:8px 14px}.kpi b{font-size:24px}}
+.prog th{font-size:13px;padding:11px 4px}
+.prog th.chev{padding-left:15px;padding-right:13px}
+.prog td{padding:9px 3px;font-size:13.5px}
+.prog td input[type=date]{width:128px;font-size:12.5px;padding:5px 4px}
+.prog td input[type=number]{width:76px}
 </style>
 </head>
 <body>
@@ -136,7 +141,7 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;display:flex;justify-co
 <nav class="tabs noprint" id="tabs"></nav>
 <main id="views"></main>
 
-<footer><span>製作：CC Chang</span><span class="noprint">資料自動儲存在此瀏覽器　<button class="btn" id="printBtn">列印</button> <button class="btn" id="resetBtn">重設為預設值</button></span></footer>
+<footer><span>製作：張紀卿</span><span class="noprint">資料自動儲存在此瀏覽器　<button class="btn" id="printBtn">列印</button> <button class="btn" id="resetBtn">重設為預設值</button></span></footer>
 </div>
 
 <script>
@@ -153,6 +158,8 @@ const PHASES=[
  {n:1,t:"備料完成",ic:"leaf"},{n:2,t:"加工完成",ic:"gear"},{n:3,t:"混合完成",ic:"bowl"},
  {n:4,t:"茶包製作完成",ic:"bag"},{n:5,t:"包裝完成",ic:"box"}];
 const PEND=[0,1,2,3,4]; // task index whose end = phase end
+const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":10000,"清韻澄意":2000};
+const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
 const KEY="herbal-schedule-v7";
 
@@ -260,30 +267,30 @@ function vOverview(){
     <p class="muted" style="margin:10px 2px 0">天數由使用者提供，包裝天數 1 天。各產品頁預設帶入此表，也可在產品頁個別修改；天數未含各廠之間的運送時間。</p>
   </section>
   <section class="card dark">${hdr("doc","各產品進度")}
-    <div class="scroll"><table class="prog">
-    <tr><th>產品</th><th class="c">Start</th>
+    ${progTable(PRODUCTS,false)}
+  </section>`;
+}
+function progTable(list,edit){
+  return `<div class="scroll"><table class="prog">
+    <tr><th>產品</th><th class="c">數量（包）</th><th class="c">Start</th>
       ${PHASES.map((ph,k)=>`<th class="c chev ph${ph.n} ${k===0?"first":""}"><span class="hi">${I[ph.ic]}<span class="num">${ph.n}</span>${ph.t}</span></th>`).join("")}
       <th class="c chev ph6">已完成</th><th class="c">狀態</th></tr>
-    ${PRODUCTS.map((p,i)=>{const pl=plans[i];const s=prodStatus(p);
-      if(!pl.length)return `<tr><td><span class="prod"><span class="em">${EMOJI[p]}</span><a href="#" data-go="${p}">${p}</a></span></td>
-      <td class="date">—</td>${PEND.map(()=>`<td class="date">—</td>`).join("")}<td class="c">—</td>
-      <td class="c"><span class="badge st-${s}">${s}</span></td></tr>`;
-      return `<tr><td><span class="prod"><span class="em">${EMOJI[p]}</span><a href="#" data-go="${p}">${p}</a></span></td>
-      <td class="date">${show(pl[0].s)}</td>
-      ${PEND.map(k=>`<td class="date">${show(pl[k].e)}</td>`).join("")}
-      <td class="c">${S.prod[p].rows.filter(r=>r.st==="完成").length} / ${TASKS.length}</td>
+    ${list.map(p=>{const pl=plan(p);const s=prodStatus(p);
+      const name=`<td><span class="prod"><span class="em">${EMOJI[p]}</span>${edit?p:`<a href="#" data-go="${p}">${p}</a>`}</span></td>`;
+      const start=edit?`<td class="c"><input type="date" data-pstart="${p}" value="${S.prod[p].start}" title="輸入 Start 即自動排程"></td>`:`<td class="date">${pl.length?show(pl[0].s):"—"}</td>`;
+      const q=qtyOf(p);
+      const qty=edit?`<td class="c"><input type="number" min="0" step="100" data-qty="${p}" value="${q}" style="width:100px"></td>`:`<td class="c">${q===null?"—":Number(q).toLocaleString("en-US")}</td>`;
+      return `<tr>${name}${qty}${start}
+      ${PEND.map(k=>`<td class="date">${pl.length?show(pl[k].e):"—"}</td>`).join("")}
+      <td class="c">${pl.length?S.prod[p].rows.filter(r=>r.st==="完成").length+" / "+TASKS.length:"—"}</td>
       <td class="c"><span class="badge st-${s}">${s}</span></td></tr>`}).join("")}
-    </table></div>
-  </section>`;
+    </table></div>`;
 }
 function vProduct(p){
   const P=S.prod[p],pl=plan(p);
-  return `<section class="card">${hdr("gear",`${EMOJI[p]} ${p}　製作時程表`)}
-    <div class="inner">
-      <label class="f">本產品 Start<input type="date" data-pstart="${p}" value="${P.start}"></label>
-      <div class="note"><i>i</i><div>${P.start?"填入實際完成日期後，後續階段會自動從該日期往後排。":"尚未排程，輸入 Start即自動排出各階段日期。"}</div></div>
-      <div style="margin-left:auto;text-align:right"><div class="muted">預計完工</div><b style="font-size:24px;color:var(--deep)">${pl.length?big(pl[pl.length-1].e):"—"}</b></div>
-    </div>
+  return `<section class="card dark">${hdr("doc",`${EMOJI[p]} ${p}　製作進度`)}
+    ${progTable([p],true)}
+    <p class="muted pad" style="margin:0">${P.start?"填入實際完成日期後，後續階段會自動從該日期往後排。":"尚未排程：在 Start 欄輸入日期即自動排出各階段。"}</p>
   </section>
   <section class="card dark">${hdr("doc","作業明細")}
     <div class="scroll"><table class="ptab">
@@ -350,6 +357,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{
   const t=e.target,d=t.dataset;
   if(d.std!==undefined)S.std[+d.std]=Math.max(1,+t.value||1);
+  else if(d.qty){S.prod[d.qty].qty=t.value===""?null:Math.max(0,+t.value)}
   else if(d.pstart){const P=S.prod[d.pstart];P.start=t.value;if(t.value)P.rows.forEach(r=>{if(!r.st)r.st="未開始"})}
   else if(d.p){const r=S.prod[d.p].rows[+d.i];
     if(d.k==="days")r.days=(+t.value===S.std[+d.i]||!t.value)?"":Math.max(1,+t.value);
