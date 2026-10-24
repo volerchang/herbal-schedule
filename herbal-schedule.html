@@ -161,7 +161,7 @@ const PEND=[0,1,2,3,4]; // task index whose end = phase end
 const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":10000,"清韻澄意":2000};
 const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
-const KEY="herbal-schedule-v7";
+const KEY="herbal-schedule-v14";
 
 const I={
  gear:'<svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
@@ -184,6 +184,7 @@ function defaults(){
     std:TASKS.map(t=>t.d),
     holidays:[
       {d:"2026-10-09",n:"國慶日補假（10/10 逢週六）"},
+      {d:"2026-10-23",n:"颱風假"},
       {d:"2026-10-26",n:"臺灣光復節補假（10/25 逢週日）"},
       {d:"2026-12-25",n:"行憲紀念日"},
       {d:"2027-01-01",n:"開國紀念日"},
@@ -194,8 +195,9 @@ function defaults(){
 function initial(){
   const d=defaults(),P=d.prod["酸棗眠雲"];
   P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
-  P.rows.slice(1).forEach(r=>r.st="未開始");
+  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成";
   const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].st="進行中";
+  const G=d.prod["清韻澄意"]; G.start="2026-10-08"; G.rows.forEach((r,i)=>{if(i<3){r.ae="2026-10-08";r.st="完成"}else r.st="未開始"}); G.rows[1].note="中藥局自行加工完成";
   return d;
 }
 let S;
@@ -216,7 +218,8 @@ function plan(p){
   let cur=pd(P.start);if(!cur)return[];
   return TASKS.map((t,i)=>{
     const r=P.rows[i],days=Math.max(1,Number(r.days||S.std[i])||1);
-    const s=r.as?pd(r.as):nextWork(cur,H);
+    let s=r.as?pd(r.as):nextWork(cur,H);
+    if(!r.as&&r.ae&&pd(r.ae)<s)s=pd(r.ae);
     const e=r.ae?pd(r.ae):addWork(s,days-1,H);
     cur=new Date(e);cur.setDate(cur.getDate()+1);
     return{days,s,e};
