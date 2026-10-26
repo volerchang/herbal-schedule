@@ -126,8 +126,10 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;display:flex;justify-co
 .prog th{font-size:13px;padding:11px 4px}
 .prog th.chev{padding-left:15px;padding-right:13px}
 .prog td{padding:9px 3px;font-size:13.5px}
-.prog td input[type=date]{width:128px;font-size:12.5px;padding:5px 4px}
-.prog td input[type=number]{width:76px}
+.prog td input[type=date]{width:116px;font-size:12px;padding:4px 2px}
+.prog td input[type=number]{width:64px;padding:4px 3px}
+.prog.edit th .hi>svg{display:none}
+.prog.edit th{font-size:12.5px}
 </style>
 </head>
 <body>
@@ -161,7 +163,7 @@ const PEND=[0,1,2,3,4]; // task index whose end = phase end
 const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":10000,"清韻澄意":2000};
 const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
-const KEY="herbal-schedule-v14";
+const KEY="herbal-schedule-v16";
 
 const I={
  gear:'<svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
@@ -196,6 +198,7 @@ function initial(){
   const d=defaults(),P=d.prod["酸棗眠雲"];
   P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
   P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成";
+  d.prod["寬心順氣"].rows[1].unit="吉翔\n宏翔"; d.prod["荷風拂透"].rows[1].unit="吉翔\n宏翔";
   const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].st="進行中";
   const G=d.prod["清韻澄意"]; G.start="2026-10-08"; G.rows.forEach((r,i)=>{if(i<3){r.ae="2026-10-08";r.st="完成"}else r.st="未開始"}); G.rows[1].note="中藥局自行加工完成";
   return d;
@@ -274,8 +277,8 @@ function vOverview(){
   </section>`;
 }
 function progTable(list,edit){
-  return `<div class="scroll"><table class="prog">
-    <tr><th>產品</th><th class="c">數量（包）</th><th class="c">Start</th>
+  return `<div class="scroll"><table class="prog${edit?" edit":""}">
+    <tr><th>產品</th><th class="c">批次</th><th class="c">數量（包）</th><th class="c">Start</th>
       ${PHASES.map((ph,k)=>`<th class="c chev ph${ph.n} ${k===0?"first":""}"><span class="hi">${I[ph.ic]}<span class="num">${ph.n}</span>${ph.t}</span></th>`).join("")}
       <th class="c chev ph6">已完成</th><th class="c">狀態</th></tr>
     ${list.map(p=>{const pl=plan(p);const s=prodStatus(p);
@@ -283,7 +286,9 @@ function progTable(list,edit){
       const start=edit?`<td class="c"><input type="date" data-pstart="${p}" value="${S.prod[p].start}" title="輸入 Start 即自動排程"></td>`:`<td class="date">${pl.length?show(pl[0].s):"—"}</td>`;
       const q=qtyOf(p);
       const qty=edit?`<td class="c"><input type="number" min="0" step="100" data-qty="${p}" value="${q}" style="width:100px"></td>`:`<td class="c">${q===null?"—":Number(q).toLocaleString("en-US")}</td>`;
-      return `<tr>${name}${qty}${start}
+      const bv=S.prod[p].batch===undefined?"第1批":S.prod[p].batch;
+      const batch=edit?`<td class="c"><input data-batch="${p}" value="${esc(bv)}" style="width:56px;padding:4px 3px;text-align:center"></td>`:`<td class="c">${esc(bv)||"—"}</td>`;
+      return `<tr>${name}${batch}${qty}${start}
       ${PEND.map(k=>`<td class="date">${pl.length?show(pl[k].e):"—"}</td>`).join("")}
       <td class="c">${pl.length?S.prod[p].rows.filter(r=>r.st==="完成").length+" / "+TASKS.length:"—"}</td>
       <td class="c"><span class="badge st-${s}">${s}</span></td></tr>`}).join("")}
@@ -301,7 +306,7 @@ function vProduct(p){
     ${TASKS.map((t,i)=>{const r=P.rows[i],x=pl[i];const late=r.ae&&x&&pd(r.ae)>x.e;
       return `<tr>
       <td class="phc" style="border-left-color:var(--p${t.p})"><span class="circ c${t.p}">${t.p}</span>${t.ph.replace(/^\d\.\s*/,"")}</td><td class="itm">${t.it}</td>
-      <td><input data-p="${p}" data-i="${i}" data-k="unit" value="${esc(r.unit)}" style="width:110px"></td>
+      <td><textarea data-p="${p}" data-i="${i}" data-k="unit" rows="${Math.max(1,String(r.unit||"").split("\n").length)}" style="width:110px;resize:vertical;line-height:1.4;font:inherit;color:inherit;background:var(--input);border:1px solid #e6e1c8;border-radius:7px;padding:6px 10px;display:block" title="可按 Enter 換行輸入多個單位">${esc(r.unit)}</textarea></td>
       <td class="c"><input type="number" min="1" data-p="${p}" data-i="${i}" data-k="days" value="${r.days||S.std[i]}"></td>
       <td class="date">${x?show(x.s):"—"}</td><td class="date">${x?show(x.e):"—"}</td>
       <td class="c"><input type="date" data-p="${p}" data-i="${i}" data-k="as" value="${r.as}"></td>
@@ -360,6 +365,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{
   const t=e.target,d=t.dataset;
   if(d.std!==undefined)S.std[+d.std]=Math.max(1,+t.value||1);
+  else if(d.batch){S.prod[d.batch].batch=t.value}
   else if(d.qty){S.prod[d.qty].qty=t.value===""?null:Math.max(0,+t.value)}
   else if(d.pstart){const P=S.prod[d.pstart];P.start=t.value;if(t.value)P.rows.forEach(r=>{if(!r.st)r.st="未開始"})}
   else if(d.p){const r=S.prod[d.p].rows[+d.i];
