@@ -19,7 +19,7 @@
 *{box-sizing:border-box}
 body{margin:0;color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;font-size:15px;line-height:1.55;
   background:var(--bg) radial-gradient(1200px 500px at 85% -10%,#e7efe0 0,transparent 60%) no-repeat}
-.wrap{max-width:1200px;margin:0 auto;padding:0 16px 48px;position:relative}
+.wrap{max-width:1320px;margin:0 auto;padding:0 16px 48px;position:relative}
 /* hero */
 header{position:relative;padding:34px 0 18px;min-height:190px}
 .hero-img{position:absolute;right:-16px;top:0;width:520px;max-width:46%;height:188px;object-fit:cover;object-position:right;
@@ -130,6 +130,29 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;display:flex;justify-co
 .prog td input[type=number]{width:64px;padding:4px 3px}
 .prog.edit th .hi>svg{display:none}
 .prog.edit th{font-size:12.5px}
+/* fit 作業明細 without horizontal scroll */
+.ptab{table-layout:auto}
+.ptab th,.ptab td{padding:7px 5px}
+.ptab td.phc{min-width:0;white-space:nowrap}
+.ptab td.itm{min-width:0;width:auto;font-size:14px}
+.ptab input[type=date]{width:122px;font-size:12.5px;padding:4px 3px}
+.ptab input[type=number]{width:48px;padding:4px 2px}
+.ptab textarea[data-k=unit]{width:86px!important;padding:5px 6px!important;font-size:14px!important}
+.ptab input[data-k=note]{width:100%!important;min-width:120px;font-size:13px;padding:5px 6px}
+.ptab td:last-child{width:14%}
+.ptab select{font-size:12.5px;padding:3px 2px}
+.ptab .circ{margin-right:6px}
+@media (max-width:1150px){
+.ptab td.itm{min-width:110px;font-size:13px}
+.ptab input[type=date]{width:112px;font-size:12px}
+.ptab input[data-k=note]{min-width:88px}
+.prog th{white-space:normal;font-size:12px;line-height:1.25}
+.prog th .hi{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:3px}
+.prog th .hi>svg{display:none}
+.prog th.chev{padding-left:13px;padding-right:11px}
+.prog td{font-size:12.5px}
+.prog td input[type=date]{width:112px}
+}
 </style>
 </head>
 <body>
@@ -166,7 +189,7 @@ const ROWDEF=p=>{const out=[];TASKS.forEach((t,k)=>{const vs=(SPLIT[p]||{})[k];
 const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":10000,"清韻澄意":2000};
 const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
-const KEY="herbal-schedule-v21";
+const KEY="herbal-schedule-v26";
 
 const I={
  gear:'<svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
@@ -201,7 +224,8 @@ function initial(){
   const d=defaults(),P=d.prod["酸棗眠雲"];
   P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
   P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].st="進行中"; P.rows[1].unit="吉翔";
-  const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].st="進行中"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成";
+  const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].as="2026-10-10"; Q.rows[0].ae="2026-10-10"; Q.rows[0].st="完成"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成"; Q.rows[1].as="2026-10-19"; Q.rows[1].st="進行中"; Q.rows[1].note="陳皮、炙甘草"; Q.rows[2].note="紫蘇葉、山藥、佛手";
+  const F=d.prod["荷風拂透"]; F.start="2026-10-12"; F.rows.forEach(r=>r.st="未開始"); F.rows[0].as="2026-10-12"; F.rows[0].ae="2026-10-14"; F.rows[0].st="完成"; F.rows[1].note="陳皮"; F.rows[2].as="2026-10-20"; F.rows[2].st="進行中"; F.rows[2].note="薏仁、荷葉、玉米鬚";
   const G=d.prod["清韻澄意"]; G.start="2026-10-08"; G.rows.forEach((r,i)=>{if(i<3){r.ae="2026-10-08";r.st="完成"}else r.st="未開始"}); G.rows[1].note="中藥局自行加工完成";
   return d;
 }
