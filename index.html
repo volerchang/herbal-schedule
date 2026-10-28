@@ -186,7 +186,7 @@ const SPLIT={"寬心順氣":{1:["吉翔","宏翔"]},"荷風拂透":{1:["吉翔",
 const ROWDEF=p=>{const out=[];TASKS.forEach((t,k)=>{const vs=(SPLIT[p]||{})[k];
   if(vs)vs.forEach((v,j)=>out.push({k,lab:`${t.p}-${j+1}`,name:t.ph.replace(/^\d\.\s*/,""),unit:v,g:`${t.it}（${v}）`}));
   else out.push({k,lab:`${t.p}`,name:t.ph.replace(/^\d\.\s*/,""),unit:t.unit,g:t.it});});return out};
-const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":10000,"清韻澄意":2000};
+const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":8000,"清韻澄意":2000};
 const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
 const KEY="herbal-schedule-v26";
