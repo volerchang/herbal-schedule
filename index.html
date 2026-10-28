@@ -177,19 +177,21 @@ const TASKS=[
  {ph:"2. 藥材加工",it:"各品項單味藥材粗碎",unit:"吉翔/宏翔",d:5,p:2},
  {ph:"3. 藥材混合",it:"依配方混合各單味藥材",unit:"中藥局",d:2,p:3},
  {ph:"4. 茶包製作",it:"送茶包代工廠投料製作＋食品 Gamma 照射",unit:"吉翔",d:5,p:4},
- {ph:"5. 茶包包裝",it:"裝袋＋貼標籤貼紙",unit:"中藥局",d:1,p:5},
+ {ph:"5. 茶包包裝",it:"貼紙印刷",unit:"",d:3,p:5,lab:"5-1"},
+ {ph:"5. 茶包包裝",it:"貼標籤貼紙＋裝袋",unit:"中藥局",d:1,p:5,lab:"5-2"},
 ];
 const PHASES=[
  {n:1,t:"備料完成",ic:"leaf"},{n:2,t:"加工完成",ic:"gear"},{n:3,t:"混合完成",ic:"bowl"},
  {n:4,t:"茶包製作完成",ic:"bag"},{n:5,t:"包裝完成",ic:"box"}];
+const PLAST=[1,2,3,4,5].map(n=>TASKS.reduce((a,t,i)=>t.p===n?i:a,-1));
 const SPLIT={"寬心順氣":{1:["吉翔","宏翔"]},"荷風拂透":{1:["吉翔","宏翔"]}};
 const ROWDEF=p=>{const out=[];TASKS.forEach((t,k)=>{const vs=(SPLIT[p]||{})[k];
   if(vs)vs.forEach((v,j)=>out.push({k,lab:`${t.p}-${j+1}`,name:t.ph.replace(/^\d\.\s*/,""),unit:v,g:`${t.it}（${v}）`}));
-  else out.push({k,lab:`${t.p}`,name:t.ph.replace(/^\d\.\s*/,""),unit:t.unit,g:t.it});});return out};
+  else out.push({k,lab:t.lab||`${t.p}`,name:t.ph.replace(/^\d\.\s*/,""),unit:t.unit,g:t.it});});return out};
 const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":8000,"清韻澄意":2000};
 const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
-const KEY="herbal-schedule-v26";
+const KEY="herbal-schedule-v30";
 
 const I={
  gear:'<svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
@@ -223,14 +225,19 @@ function defaults(){
 function initial(){
   const d=defaults(),P=d.prod["酸棗眠雲"];
   P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
-  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].st="進行中"; P.rows[1].unit="吉翔";
-  const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].as="2026-10-10"; Q.rows[0].ae="2026-10-10"; Q.rows[0].st="完成"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成"; Q.rows[1].as="2026-10-19"; Q.rows[1].st="進行中"; Q.rows[1].note="陳皮、炙甘草"; Q.rows[2].note="紫蘇葉、山藥、佛手";
+  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].st="進行中"; P.rows[1].unit="吉翔"; P.rows[4].unit="上賓"; P.rows[4].as="2026-10-27"; P.rows[4].st="進行中";
+  const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].as="2026-10-10"; Q.rows[0].ae="2026-10-10"; Q.rows[0].st="完成"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成"; Q.rows[1].as="2026-10-19"; Q.rows[1].ae="2026-10-28"; Q.rows[1].st="完成"; Q.rows[1].note="陳皮、炙甘草"; Q.rows[2].note="紫蘇葉、山藥、佛手";
   const F=d.prod["荷風拂透"]; F.start="2026-10-12"; F.rows.forEach(r=>r.st="未開始"); F.rows[0].as="2026-10-12"; F.rows[0].ae="2026-10-14"; F.rows[0].st="完成"; F.rows[1].note="陳皮"; F.rows[2].as="2026-10-20"; F.rows[2].st="進行中"; F.rows[2].note="薏仁、荷葉、玉米鬚";
   const G=d.prod["清韻澄意"]; G.start="2026-10-08"; G.rows.forEach((r,i)=>{if(i<3){r.ae="2026-10-08";r.st="完成"}else r.st="未開始"}); G.rows[1].note="中藥局自行加工完成";
   return d;
 }
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
+(function migrate(){try{
+  if(S.std&&S.std.length===TASKS.length-1){S.std=[...S.std.slice(0,4),3,S.std[4]];}
+  PRODUCTS.forEach(p=>{const P=S.prod[p],defs=ROWDEF(p);if(!P||!P.rows)return;
+    if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
+}catch(e){}})();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 const pd=s=>{if(!s)return null;const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
@@ -253,7 +260,7 @@ function plan(p){
       if(!r.as&&r.ae&&pd(r.ae)<s)s=pd(r.ae);
       const e=r.ae?pd(r.ae):addWork(s,days-1,H);
       out[i]={days,s,e,plannedE:addWork(s,days-1,H)};if(!end||e>end)end=e;});
-    pe[k]=end;cur=new Date(end);cur.setDate(cur.getDate()+1);});
+    pe[k]=end;const nx=new Date(end);nx.setDate(nx.getDate()+1);if(nx>cur)cur=nx;});
   out.pe=pe;return out;
 }
 function prodStatus(p){
@@ -293,7 +300,7 @@ function vOverview(){
   <section class="card">${hdr("bars","標準作業天數（工作天）")}
     <div class="scroll"><table class="std">
     <tr><th>階段</th><th>作業項目</th><th>執行單位</th><th class="c">天數</th></tr>
-    ${TASKS.map((t,i)=>`<tr><td><span class="circ c${t.p}">${t.p}</span>${t.ph.replace(/^\d\.\s*/,"")}</td><td>${t.it}</td>
+    ${TASKS.map((t,i)=>`<tr><td><span class="circ c${t.p}" style="${t.lab?"width:auto;padding:0 6px;border-radius:11px":""}">${t.lab||t.p}</span>${t.ph.replace(/^\d\.\s*/,"")}</td><td>${t.it}</td>
       <td>${t.unit}</td>
       <td class="c"><input type="number" min="1" data-std="${i}" value="${S.std[i]}"></td></tr>`).join("")}
     <tr class="tot"><td></td><td>合計</td><td></td><td class="c">${total}</td></tr>
@@ -317,7 +324,7 @@ function progTable(list,edit){
       const bv=S.prod[p].batch===undefined?"第1批":S.prod[p].batch;
       const batch=edit?`<td class="c"><input data-batch="${p}" value="${esc(bv)}" style="width:56px;padding:4px 3px;text-align:center"></td>`:`<td class="c">${esc(bv)||"—"}</td>`;
       return `<tr>${name}${batch}${qty}${start}
-      ${TASKS.map((t,k)=>`<td class="date">${pl.length?show(pl.pe[k]):"—"}</td>`).join("")}
+      ${PHASES.map(ph=>`<td class="date">${pl.length?show(pl.pe[PLAST[ph.n-1]]):"—"}</td>`).join("")}
       <td class="c">${pl.length?S.prod[p].rows.filter(r=>r.st==="完成").length+" / "+S.prod[p].rows.length:"—"}</td>
       <td class="c"><span class="badge st-${s}">${s}</span></td></tr>`}).join("")}
     </table></div>`;
