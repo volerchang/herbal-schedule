@@ -80,6 +80,8 @@ td.date{white-space:nowrap;text-align:center}
 .ph1 .num{color:var(--p1)}.ph2 .num{color:var(--p2)}.ph3 .num{color:var(--p3)}.ph4 .num{color:var(--p4)}.ph5 .num{color:var(--p5)}
 .prog td{font-size:14px}
 .prod{display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap}
+.pnm{display:flex;flex-direction:column;line-height:1.25}
+.pno{display:block;font-weight:500;font-size:11.5px;color:var(--muted);letter-spacing:.03em}
 .prod .em{font-size:20px}
 .prod a{color:inherit;text-decoration:none}.prod a:hover{text-decoration:underline}
 .badge{display:inline-block;padding:3px 14px;border-radius:999px;font-size:14px;white-space:nowrap;border:1px solid transparent}
@@ -188,6 +190,7 @@ const SPLIT={"寬心順氣":{1:["吉翔","宏翔"]},"荷風拂透":{1:["吉翔",
 const ROWDEF=p=>{const out=[];TASKS.forEach((t,k)=>{const vs=(SPLIT[p]||{})[k];
   if(vs)vs.forEach((v,j)=>out.push({k,lab:`${t.p}-${j+1}`,name:t.ph.replace(/^\d\.\s*/,""),unit:v,g:`${t.it}（${v}）`}));
   else out.push({k,lab:t.lab||`${t.p}`,name:t.ph.replace(/^\d\.\s*/,""),unit:t.unit,g:t.it});});return out};
+const PARTNO={"酸棗眠雲":"RE140101","寬心順氣":"RE150101","荷風拂透":"RE110201","耆參元氣":"RE100101","清神元氣":"結緣品"};
 const QTY={"酸棗眠雲":10000,"寬心順氣":10000,"荷風拂透":8000,"清神元氣":2000,"耆參元氣":10000};
 const qtyOf=p=>{const v=S.prod[p].qty;return v===undefined||v===""?QTY[p]:v};
 const STATUSES=["","未開始","進行中","完成","延遲"];
@@ -326,7 +329,7 @@ function progTable(list,edit){
       ${PHASES.map((ph,k)=>`<th class="c chev ph${ph.n} ${k===0?"first":""}"><span class="hi">${I[ph.ic]}<span class="num">${ph.n}</span>${ph.t}</span></th>`).join("")}
       <th class="c chev ph6">已完成</th><th class="c">狀態</th></tr>
     ${list.map(p=>{const pl=plan(p);const s=prodStatus(p);
-      const name=`<td><span class="prod"><span class="em">${EMOJI[p]}</span>${edit?p:`<a href="#" data-go="${p}">${p}</a>`}</span></td>`;
+      const name=`<td><span class="prod"><span class="em">${EMOJI[p]}</span><span class="pnm">${edit?p:`<a href="#" data-go="${p}">${p}</a>`}${PARTNO[p]?`<small class="pno">${PARTNO[p]}</small>`:""}</span></span></td>`;
       const start=edit?`<td class="c"><input type="date" data-pstart="${p}" value="${S.prod[p].start}" title="輸入 Start 即自動排程"></td>`:`<td class="date">${pl.length?show(pl[0].s):"—"}</td>`;
       const q=qtyOf(p);
       const qty=edit?`<td class="c"><input type="number" min="0" step="100" data-qty="${p}" value="${q}" style="width:100px"></td>`:`<td class="c">${q===null?"—":Number(q).toLocaleString("en-US")}</td>`;
@@ -371,7 +374,7 @@ function vGantt(){
   let body="";
   PRODUCTS.forEach((p,pi)=>{
     if(!plans[pi].length){body+=`<tr class="grp"><td class="lbl">${EMOJI[p]} ${p}　<span class="muted">未排程</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;return}
-    body+=`<tr class="grp"><td class="lbl">${EMOJI[p]} ${p}　<span class="muted">完工 ${show(plans[pi].pe[TASKS.length-1])}</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;
+    body+=`<tr class="grp"><td class="lbl">${EMOJI[p]} ${p}${PARTNO[p]?` <small class="pno" style="display:inline">${PARTNO[p]}</small>`:""}　<span class="muted">完工 ${show(plans[pi].pe[TASKS.length-1])}</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;
     ROWDEF(p).forEach((rd,i)=>{const t=TASKS[rd.k],x=plans[pi][i];
       body+=`<tr><td class="lbl">${rd.g}</td>${days.map(d=>{const on=d>=x.s&&d<=x.e&&isWork(d,H);const off=!isWork(d,H);
         const cls=["cell",on?"on":off?"off":"",fmt(d)===fmt(x.s)?"first":"",fmt(d)===fmt(x.e)?"last":"",fmt(d)===today?"today":""].join(" ");
