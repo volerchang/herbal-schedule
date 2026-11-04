@@ -225,10 +225,10 @@ function defaults(){
 function initial(){
   const d=defaults(),P=d.prod["酸棗眠雲"];
   P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
-  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].st="進行中"; P.rows[1].unit="吉翔"; P.rows[4].unit="上賓"; P.rows[4].as="2026-10-27"; P.rows[4].st="進行中";
-  const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].as="2026-10-10"; Q.rows[0].ae="2026-10-10"; Q.rows[0].st="完成"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成"; Q.rows[1].as="2026-10-19"; Q.rows[1].ae="2026-10-28"; Q.rows[1].st="完成"; Q.rows[1].note="陳皮、炙甘草"; Q.rows[2].note="紫蘇葉、山藥、佛手";
-  const F=d.prod["荷風拂透"]; F.start="2026-10-12"; F.rows.forEach(r=>r.st="未開始"); F.rows[0].as="2026-10-12"; F.rows[0].ae="2026-10-14"; F.rows[0].st="完成"; F.rows[1].note="陳皮"; F.rows[2].as="2026-10-20"; F.rows[2].st="進行中"; F.rows[2].note="薏仁、荷葉、玉米鬚";
-  const G=d.prod["清神元氣"]; G.start="2026-10-08"; G.rows.forEach((r,i)=>{if(i<3){r.ae="2026-10-08";r.st="完成"}else r.st="未開始"}); G.rows[1].note="中藥局自行加工完成";
+  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].ae="2026-10-29"; P.rows[3].st="完成"; P.rows[1].unit="吉翔"; P.rows[4].unit="上賓"; P.rows[4].as="2026-10-27"; P.rows[4].ae="2026-10-29"; P.rows[4].st="完成";
+  const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].as="2026-10-10"; Q.rows[0].ae="2026-10-10"; Q.rows[0].st="完成"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成"; Q.rows[1].as="2026-10-19"; Q.rows[1].ae="2026-10-28"; Q.rows[1].st="完成"; Q.rows[1].note="陳皮、炙甘草"; Q.rows[2].note="紫蘇葉、山藥、佛手"; Q.rows[5].unit="健豪"; Q.rows[5].as="2026-10-28"; Q.rows[5].ae="2026-11-02"; Q.rows[5].st="完成";
+  const F=d.prod["荷風拂透"]; F.start="2026-10-12"; F.rows.forEach(r=>r.st="未開始"); F.rows[0].as="2026-10-12"; F.rows[0].ae="2026-10-14"; F.rows[0].st="完成"; F.rows[1].note="陳皮"; F.rows[2].as="2026-10-20"; F.rows[2].st="進行中"; F.rows[2].note="薏仁、荷葉、玉米鬚"; F.rows[5].unit="健豪"; F.rows[5].as="2026-11-02"; F.rows[5].st="進行中";
+  const G=d.prod["清神元氣"]; G.start="2026-10-08"; G.rows.forEach((r,i)=>{if(i<3){r.ae="2026-10-08";r.st="完成"}else r.st="未開始"}); G.rows[1].note="中藥局自行加工完成"; G.rows[4].unit="健豪"; G.rows[4].as="2026-11-02"; G.rows[4].st="進行中";
   return d;
 }
 let S;
@@ -240,6 +240,13 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
   PRODUCTS.forEach(p=>{const P=S.prod[p],defs=ROWDEF(p);if(!P||!P.rows)return;
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
+const PATCHES=[
+  {id:"2026-11-04-hefeng-qingshen-sticker",fn:S=>{[["荷風拂透",5],["清神元氣",4]].forEach(([p,i])=>{const r=S.prod[p]&&S.prod[p].rows[i];if(r){if(!r.unit)r.unit="健豪";if(!r.as)r.as="2026-11-02";if(!r.st||r.st==="未開始")r.st="進行中";}});}},
+  {id:"2026-11-04-kuanxin-sticker",fn:S=>{const r=S.prod["寬心順氣"]&&S.prod["寬心順氣"].rows[5];if(r){if(!r.unit)r.unit="健豪";if(!r.as)r.as="2026-10-28";if(!r.ae)r.ae="2026-11-02";r.st="完成";}}},
+  {id:"2026-11-04-suanzao-sticker-done",fn:S=>{const r=S.prod["酸棗眠雲"]&&S.prod["酸棗眠雲"].rows[4];if(r){if(!r.as)r.as="2026-10-27";if(!r.ae)r.ae="2026-10-29";r.st="完成";}}},
+  {id:"2026-11-04-suanzao-tea-done",fn:S=>{const r=S.prod["酸棗眠雲"]&&S.prod["酸棗眠雲"].rows[3];if(r){if(!r.ae)r.ae="2026-10-29";r.st="完成";}}},
+];
+(function applyPatches(){try{S.patches=S.patches||[];PATCHES.forEach(x=>{if(!S.patches.includes(x.id)){x.fn(S);S.patches.push(x.id);}});}catch(e){}})();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 const pd=s=>{if(!s)return null;const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
