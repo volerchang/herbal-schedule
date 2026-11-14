@@ -191,7 +191,7 @@ const PHASES=[
  {n:1,t:"備料完成",ic:"leaf"},{n:2,t:"加工完成",ic:"gear"},{n:3,t:"混合完成",ic:"bowl"},
  {n:4,t:"茶包製作完成",ic:"bag"},{n:5,t:"包裝完成",ic:"box"}];
 const PLAST=[1,2,3,4,5].map(n=>TASKS.reduce((a,t,i)=>t.p===n?i:a,-1));
-const SPLIT={"寬心順氣":{1:["吉翔","宏翔"],4:[{unit:"健豪",tag:"第一次"},{unit:"健豪",tag:"第二次"}],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"}]},"荷風拂透":{1:["吉翔","宏翔"],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"}]},"耆參元氣":{1:["吉翔","宏翔"]},"清神元氣 第2批":{1:["吉翔","宏翔"]},"茯棗日安":{1:["吉翔","宏翔"]}};
+const SPLIT={"寬心順氣":{1:["吉翔","宏翔"],4:[{unit:"健豪",tag:"第一次"},{unit:"健豪",tag:"第二次"}],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"}]},"荷風拂透":{1:["吉翔","宏翔"],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"}]},"耆參元氣":{1:["吉翔","宏翔"]},"清神元氣 第2批":{1:["吉翔","宏翔"]},"茯棗日安":{1:["吉翔","宏翔"]},"酸棗眠雲 第2批":{1:["吉翔","中藥局"]}};
 const ITEMOVR={"清神元氣":{3:"送茶包代工廠投料製作"}};
 const SKIP={"酸棗眠雲 第2批":[4]};  // 該批不需執行的作業（第2批貼紙沿用第1批）
 const ROWDEF=p=>{const out=[];TASKS.forEach((t,k)=>{if((SKIP[p]||[]).includes(k))return;const vs=(SPLIT[p]||SPLIT[BASE(p)]||{})[k];
@@ -220,6 +220,7 @@ const LEAFSVG='<svg class="leaf" viewBox="0 0 100 100"><path fill="#9fbf8f" d="M
 
 function defaults(){
   return {
+    mig:{z2:1},
     start:"2026-10-12",
     std:TASKS.map(t=>t.d),
     holidays:[
@@ -235,7 +236,7 @@ function defaults(){
 function initial(){
   const d=defaults(),P=d.prod["酸棗眠雲"];
   P.start="2026-10-06"; P.rows[0].ae="2026-10-08"; P.rows[0].st="完成";
-  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].ae="2026-10-29"; P.rows[3].st="完成"; P.rows[1].unit="吉翔"; P.rows[4].unit="上賓"; P.rows[4].note="2500張"; P.rows[5].as="2026-11-02"; P.rows[5].ae="2026-11-09"; P.rows[5].st="完成"; P.rows[5].note="578袋"; P.rows[4].as="2026-10-27"; P.rows[4].ae="2026-10-29"; P.rows[4].st="完成";
+  P.rows.slice(1).forEach(r=>r.st="未開始"); P.rows[1].as="2026-10-12"; P.rows[1].ae="2026-10-19"; P.rows[1].st="完成"; P.rows[2].as="2026-10-20"; P.rows[2].ae="2026-10-20"; P.rows[2].st="完成"; P.rows[3].as="2026-10-20"; P.rows[3].ae="2026-10-29"; P.rows[3].st="完成"; P.rows[1].unit="吉翔"; P.rows[1].note="百合、茯苓、麥門冬、龍眼肉、紅棗"; P.rows[4].unit="上賓"; P.rows[4].note="2500張"; P.rows[5].as="2026-11-02"; P.rows[5].ae="2026-11-09"; P.rows[5].st="完成"; P.rows[5].note="578袋"; P.rows[4].as="2026-10-27"; P.rows[4].ae="2026-10-29"; P.rows[4].st="完成";
   const Q=d.prod["寬心順氣"]; Q.start="2026-10-08"; Q.rows.forEach(r=>r.st="未開始"); Q.rows[0].as="2026-10-10"; Q.rows[0].ae="2026-10-10"; Q.rows[0].st="完成"; Q.rows[2].as="2026-10-13"; Q.rows[2].ae="2026-10-21"; Q.rows[2].st="完成"; Q.rows[1].as="2026-10-19"; Q.rows[1].ae="2026-10-28"; Q.rows[1].st="完成"; Q.rows[1].note="陳皮、炙甘草"; Q.rows[2].note="紫蘇葉、山藥、佛手"; Q.rows[5].unit="健豪"; Q.rows[5].as="2026-10-28"; Q.rows[5].ae="2026-11-02"; Q.rows[5].st="完成"; Q.rows[5].note="500張"; Q.lot="150101261109"; Q.rows[7].as="2026-11-10"; Q.rows[7].ae="2026-11-10"; Q.rows[7].st="完成"; Q.rows[7].note="189袋"; Q.rows[3].as="2026-11-03"; Q.rows[3].ae="2026-11-04"; Q.rows[3].st="完成"; Q.rows[4].as="2026-10-26"; Q.rows[4].ae="2026-11-09"; Q.rows[4].st="完成"; Q.rows[6].unit="健豪"; Q.rows[6].note="500張"; Q.rows[6].as="2026-11-06"; Q.rows[6].ae="2026-11-09"; Q.rows[6].st="完成";
   const F=d.prod["荷風拂透"]; F.start="2026-10-12"; F.rows.forEach(r=>r.st="未開始"); F.rows[0].as="2026-10-12"; F.rows[0].ae="2026-10-14"; F.rows[0].st="完成"; F.rows[1].note="陳皮"; F.rows[2].as="2026-10-20"; F.rows[2].st="進行中"; F.rows[2].note="薏仁、荷葉、玉米鬚"; F.lot="110201261109"; F.rows[1].ae="2026-10-28"; F.rows[1].st="完成"; F.rows[3].as="2026-11-03"; F.rows[3].ae="2026-11-04"; F.rows[3].st="完成"; F.rows[6].as="2026-11-10"; F.rows[6].ae="2026-11-10"; F.rows[6].st="完成"; F.rows[6].note="100袋"; F.rows[4].as="2026-10-26"; F.rows[4].ae="2026-11-09"; F.rows[4].st="完成"; F.rows[5].unit="健豪"; F.rows[5].as="2026-11-02"; F.rows[5].ae="2026-11-05"; F.rows[5].st="完成"; F.rows[5].note="1000張";
   const J=d.prod["耆參元氣"]; J.start="2026-11-09"; J.rows.forEach(r=>r.st="未開始"); J.rows[1].as="2026-11-09"; J.rows[1].st="進行中"; J.rows[5].unit="健豪"; J.rows[2].as="2026-11-11"; J.rows[2].st="進行中"; J.rows[5].as="2026-11-13"; J.rows[5].st="進行中"; J.rows[0].ae="2026-11-09"; J.rows[0].st="完成";
@@ -250,7 +251,7 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
   {const J=S.prod["耆參元氣"];if(J&&J.rows&&J.rows.length===6){J.rows.splice(2,0,{days:"",unit:"宏翔",as:"",ae:"",st:J.start?"未開始":"",note:""});if(J.rows[1].unit==="吉翔/宏翔"||!J.rows[1].unit)J.rows[1].unit="吉翔";}}
   {const F2=S.prod["茯棗日安"];if(F2&&F2.rows&&F2.rows.length===6){F2.rows.splice(2,0,{days:"",unit:"宏翔",as:"",ae:"",st:F2.start?"未開始":"",note:""});if(F2.rows[1].unit==="吉翔/宏翔"||!F2.rows[1].unit)F2.rows[1].unit="吉翔";}}
   {const G2=S.prod["清神元氣 第2批"];if(G2&&G2.rows&&G2.rows.length===6)G2.rows.splice(2,0,{days:"",unit:"宏翔",as:"",ae:"",st:G2.start?"未開始":"",note:""});if(G2&&G2.rows&&G2.rows[1]&&(G2.rows[1].unit==="吉翔/宏翔"||!G2.rows[1].unit))G2.rows[1].unit="吉翔";}
-  {const Z=S.prod["酸棗眠雲 第2批"];if(Z&&Z.rows&&Z.rows.length===6)Z.rows.splice(4,1);}
+  {const Z=S.prod["酸棗眠雲 第2批"];S.mig=S.mig||{};if(Z&&Z.rows&&!S.mig.z2){if(Z.rows.length===6)Z.rows.splice(4,1);if(Z.rows.length===5){Z.rows.splice(2,0,{days:"",unit:"中藥局",as:"",ae:"",st:Z.start?"未開始":"",note:""});if(Z.rows[1].unit==="吉翔/宏翔"||!Z.rows[1].unit)Z.rows[1].unit="吉翔";}}if(Z)S.mig.z2=1;}
   {const H=S.prod["荷風拂透"];if(H&&H.rows&&H.rows.length===7)H.rows.push({days:"",unit:"中藥局",as:"",ae:"",st:H.start?"未開始":"",note:""});}
   {const K=S.prod["寬心順氣"];if(K&&K.rows&&K.rows.length===8)K.rows.push({days:"",unit:"中藥局",as:"",ae:"",st:K.start?"未開始":"",note:""});}
   {const K=S.prod["寬心順氣"];if(K&&K.rows&&K.rows.length===7)K.rows.splice(6,0,{days:"",unit:"",as:"",ae:"",st:K.start?"未開始":"",note:""});}
@@ -259,6 +260,8 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-14-suanzao2-grind",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z||Z.rows.length!==6)return;if(!Z.rows[1].note)Z.rows[1].note="百合、茯苓、麥門冬、龍眼肉、紅棗";if(!Z.rows[2].note)Z.rows[2].note="酸棗仁";}},
+  {id:"2026-11-14-suanzao-grind-note",fn:S=>{const r=S.prod["酸棗眠雲"]&&S.prod["酸棗眠雲"].rows[1];if(r&&!r.note)r.note="百合、茯苓、麥門冬、龍眼肉、紅棗";}},
   {id:"2026-11-14-qishen-prep-done",fn:S=>{const r=S.prod["耆參元氣"]&&S.prod["耆參元氣"].rows[0];if(r){if(!r.ae)r.ae="2026-11-09";r.st="完成";}}},
   {id:"2026-11-14-qishen-sticker-start",fn:S=>{const J=S.prod["耆參元氣"];const r=J&&J.rows.length===7&&J.rows[5];if(r){if(!r.as)r.as="2026-11-13";if(!r.st||r.st==="未開始")r.st="進行中";}}},
   {id:"2026-11-14-suanzao-bags",fn:S=>{const r=S.prod["酸棗眠雲"]&&S.prod["酸棗眠雲"].rows[5];if(r&&!r.note)r.note="578袋";}},
