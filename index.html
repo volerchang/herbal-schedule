@@ -260,6 +260,15 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-16-fuzao-info",fn:S=>{const P=S.prod["茯棗日安"];if(!P||P.rows.length!==7)return;if(P.qty===undefined||P.qty===null||P.qty==="")P.qty=10000;
+    if(!P.rows[1].note)P.rows[1].note="紅棗、陳皮、菊花";if(!P.rows[2].note)P.rows[2].note="枸杞、山藥、茯苓";if(!P.rows[5].unit)P.rows[5].unit="健豪";}},
+  {id:"2026-11-16-fuzao-start",fn:S=>{const P=S.prod["茯棗日安"];if(!P)return;if(!P.start)P.start="2026-11-16";P.rows.forEach(r=>{if(!r.st)r.st="未開始";});}},
+  {id:"2026-11-16-suanzao2-prep-fix",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z)return;if(!Z.start||Z.start==="2026-11-01")Z.start="2026-11-02";const r=Z.rows[0];if(!r.as||r.as==="2026-11-01")r.as="2026-11-02";if(!r.ae)r.ae="2026-11-05";r.st="完成";}},
+  {id:"2026-11-16-suanzao2-prep",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z)return;if(!Z.start)Z.start="2026-11-01";Z.rows.forEach(r=>{if(!r.st)r.st="未開始";});const r=Z.rows[0];if(!r.as)r.as="2026-11-01";if(!r.ae)r.ae="2026-11-05";r.st="完成";}},
+  {id:"2026-11-16-suanzao2-mix-done",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z||Z.rows.length!==6)return;const r=Z.rows[3];if(!r.as)r.as="2026-11-16";if(!r.ae)r.ae="2026-11-16";r.st="完成";}},
+  {id:"2026-11-16-suanzao2-tcm-done",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z||Z.rows.length!==6)return;const r=Z.rows[2];if(!r.as)r.as="2026-11-13";if(!r.ae)r.ae="2026-11-13";r.st="完成";}},
+  {id:"2026-11-14-suanzao2-qty",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(Z&&(Z.qty===undefined||Z.qty===null||Z.qty===""))Z.qty=10000;}},
+  {id:"2026-11-14-suanzao2-jixiang-done",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z||Z.rows.length!==6)return;const r=Z.rows[1];if(!r.ae)r.ae="2026-11-13";r.st="完成";}},
   {id:"2026-11-14-suanzao2-grind",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z||Z.rows.length!==6)return;if(!Z.rows[1].note)Z.rows[1].note="百合、茯苓、麥門冬、龍眼肉、紅棗";if(!Z.rows[2].note)Z.rows[2].note="酸棗仁";}},
   {id:"2026-11-14-suanzao-grind-note",fn:S=>{const r=S.prod["酸棗眠雲"]&&S.prod["酸棗眠雲"].rows[1];if(r&&!r.note)r.note="百合、茯苓、麥門冬、龍眼肉、紅棗";}},
   {id:"2026-11-14-qishen-prep-done",fn:S=>{const r=S.prod["耆參元氣"]&&S.prod["耆參元氣"].rows[0];if(r){if(!r.ae)r.ae="2026-11-09";r.st="完成";}}},
