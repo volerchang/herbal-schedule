@@ -260,6 +260,10 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-18-kuanxin-pack2-fix",fn:S=>{const K=S.prod["寬心順氣"];if(!K||K.rows.length!==9)return;const r=K.rows[8];if(!r.as||r.as==="2026-11-17")r.as="2026-11-18";if(!r.st||r.st==="未開始")r.st="進行中";}},
+  {id:"2026-11-18-hefeng-pack2",fn:S=>{const H=S.prod["荷風拂透"];if(!H||H.rows.length!==8)return;const r=H.rows[7];if(!r.as)r.as="2026-11-17";if(!r.ae)r.ae="2026-11-17";if(!r.note)r.note="30袋";r.st="完成";}},
+  {id:"2026-11-17-kuanxin-pack2-start",fn:S=>{const K=S.prod["寬心順氣"];if(!K||K.rows.length!==9)return;const r=K.rows[8];if(!r.as)r.as="2026-11-17";if(!r.st||r.st==="未開始")r.st="進行中";}},
+  {id:"2026-11-17-fuzao-prep-start",fn:S=>{const P=S.prod["茯棗日安"];if(!P)return;const r=P.rows[0];if(!r.as)r.as="2026-11-16";if(!r.st||r.st==="未開始")r.st="進行中";}},
   {id:"2026-11-17-qishen-jixiang-done",fn:S=>{const J=S.prod["耆參元氣"];if(!J||J.rows.length!==7)return;const r=J.rows[1];if(!r.ae)r.ae="2026-11-12";r.st="完成";}},
   {id:"2026-11-17-suanzao2-tea-start",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z||Z.rows.length!==6)return;const r=Z.rows[4];if(!r.as)r.as="2026-11-17";if(!r.st||r.st==="未開始")r.st="進行中";}},
   {id:"2026-11-17-suanzao-bags-734",fn:S=>{const r=S.prod["酸棗眠雲"]&&S.prod["酸棗眠雲"].rows[5];if(r&&(!r.note||r.note==="578袋"))r.note="734袋";}},
