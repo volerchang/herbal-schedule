@@ -260,6 +260,9 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-19-qishen-mix-tea",fn:S=>{const J=S.prod["耆參元氣"];if(!J||J.rows.length!==7)return;const m=J.rows[3],t=J.rows[4];if(!m.as)m.as="2026-11-19";if(!m.ae)m.ae="2026-11-19";m.st="完成";if(!t.as)t.as="2026-11-19";if(!t.st||t.st==="未開始")t.st="進行中";}},
+  {id:"2026-11-19-qingshen2-jixiang-done",fn:S=>{const G=S.prod["清神元氣 第2批"];if(!G||G.rows.length!==7)return;const r=G.rows[1];if(!r.ae)r.ae="2026-11-19";r.st="完成";}},
+  {id:"2026-11-18-qingshen2-jixiang-start",fn:S=>{const G=S.prod["清神元氣 第2批"];if(!G||G.rows.length!==7)return;const r=G.rows[1];if(!r.as)r.as="2026-11-17";if(!r.st||r.st==="未開始")r.st="進行中";}},
   {id:"2026-11-18-kuanxin-pack2-fix",fn:S=>{const K=S.prod["寬心順氣"];if(!K||K.rows.length!==9)return;const r=K.rows[8];if(!r.as||r.as==="2026-11-17")r.as="2026-11-18";if(!r.st||r.st==="未開始")r.st="進行中";}},
   {id:"2026-11-18-hefeng-pack2",fn:S=>{const H=S.prod["荷風拂透"];if(!H||H.rows.length!==8)return;const r=H.rows[7];if(!r.as)r.as="2026-11-17";if(!r.ae)r.ae="2026-11-17";if(!r.note)r.note="30袋";r.st="完成";}},
   {id:"2026-11-17-kuanxin-pack2-start",fn:S=>{const K=S.prod["寬心順氣"];if(!K||K.rows.length!==9)return;const r=K.rows[8];if(!r.as)r.as="2026-11-17";if(!r.st||r.st==="未開始")r.st="進行中";}},
