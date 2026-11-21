@@ -260,6 +260,8 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-21-supplies",fn:S=>{S.supplies=S.supplies||[];[["2026-10-12","六兩開窗牛皮袋",3500],["2026-11-23","六兩開窗牛皮袋",3500],["2026-11-16","四兩開窗牛皮袋",500]].forEach(([d,it,q])=>{if(!S.supplies.some(x=>x.d===d&&x.it===it))S.supplies.push({d,it,q,unit:"個",note:""});});}},
+  {id:"2026-11-21-qishen-hongxiang-done",fn:S=>{const J=S.prod["耆參元氣"];if(!J||J.rows.length!==7)return;const r=J.rows[2];if(!r.ae)r.ae="2026-11-18";r.st="完成";}},
   {id:"2026-11-19-qishen-mix-tea",fn:S=>{const J=S.prod["耆參元氣"];if(!J||J.rows.length!==7)return;const m=J.rows[3],t=J.rows[4];if(!m.as)m.as="2026-11-19";if(!m.ae)m.ae="2026-11-19";m.st="完成";if(!t.as)t.as="2026-11-19";if(!t.st||t.st==="未開始")t.st="進行中";}},
   {id:"2026-11-19-qingshen2-jixiang-done",fn:S=>{const G=S.prod["清神元氣 第2批"];if(!G||G.rows.length!==7)return;const r=G.rows[1];if(!r.ae)r.ae="2026-11-19";r.st="完成";}},
   {id:"2026-11-18-qingshen2-jixiang-start",fn:S=>{const G=S.prod["清神元氣 第2批"];if(!G||G.rows.length!==7)return;const r=G.rows[1];if(!r.as)r.as="2026-11-17";if(!r.st||r.st==="未開始")r.st="進行中";}},
@@ -387,7 +389,8 @@ function vOverview(){
   </section>
   <section class="card dark">${hdr("doc","各產品進度")}
     ${progTable(PRODUCTS,false)}
-  </section>`;
+  </section>
+  ${vSupplies()}`;
 }
 function progTable(list,edit){
   return `<div class="scroll"><table class="prog${edit?" edit":""}">
@@ -437,25 +440,47 @@ function vDetail(p,multi){
   </section>`;
 }
 function vGantt(){
-  const H=holSet(),plans=PRODUCTS.map(plan);
-  let lo=null,hi=null;plans.forEach(pl=>pl.forEach(x=>{if(!lo||x.s<lo)lo=x.s;if(!hi||x.e>hi)hi=x.e}));
-  if(!lo)return`<section class="card">請先設定 Start。</section>`;
+  const H=holSet(),tdy=pd(fmt(new Date()));
+  const act=PRODUCTS.map(p=>S.prod[p].rows.map(r=>{const s=r.as?pd(r.as):r.ae?pd(r.ae):null;if(!s)return null;const done=!!r.ae;const e=done?pd(r.ae):(tdy>s?tdy:s);return{s,e,done}}));
+  let lo=null,hi=null;act.forEach(a=>a.forEach(x=>{if(!x)return;if(!lo||x.s<lo)lo=x.s;if(!hi||x.e>hi)hi=x.e}));
+  if(!lo)return`<section class="card">尚無任何實際開始／實際完成日期。</section>`;
+  if(tdy>hi)hi=tdy;
   const days=[];for(let d=new Date(lo);d<=hi;d.setDate(d.getDate()+1))days.push(new Date(d));
   const today=fmt(new Date());
   const head=days.map((d,k)=>`<th class="d ${d.getDate()===1||k===0?"mon":""}">${d.getDate()===1||k===0?`<b>${d.getMonth()+1}月</b><br>`:""}${d.getDate()}<br>${WK[d.getDay()]}</th>`).join("");
   let body="";
   PRODUCTS.forEach((p,pi)=>{
-    if(!plans[pi].length){body+=`<tr class="grp"><td class="lbl">${EMOJI[BASE(p)]} ${p}　<span class="muted">未排程</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;return}
-    body+=`<tr class="grp"><td class="lbl">${EMOJI[BASE(p)]} ${p}${PARTNO[BASE(p)]?` <small class="pno" style="display:inline">${PARTNO[BASE(p)]}</small>`:""}　<span class="muted">完工 ${show(plans[pi].pe[TASKS.length-1])}</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;
-    ROWDEF(p).forEach((rd,i)=>{const t=TASKS[rd.k],x=plans[pi][i];
-      body+=`<tr><td class="lbl">${rd.g}</td>${days.map(d=>{const on=d>=x.s&&d<=x.e&&isWork(d,H);const off=!isWork(d,H);
-        const cls=["cell",on?"on":off?"off":"",fmt(d)===fmt(x.s)?"first":"",fmt(d)===fmt(x.e)?"last":"",fmt(d)===today?"today":""].join(" ");
-        return`<td class="${cls}" ${on?`style="background:var(--p${t.p})" title="${t.it}：${show(x.s)}–${show(x.e)}"`:""}></td>`}).join("")}</tr>`;
+    body+=`<tr class="grp"><td class="lbl">${EMOJI[BASE(p)]} ${p}${PARTNO[BASE(p)]?` <small class="pno" style="display:inline">${PARTNO[BASE(p)]}</small>`:""}　<span class="muted">${prodStatus(p)}</span></td>${days.map(()=>`<td class="cell"></td>`).join("")}</tr>`;
+    ROWDEF(p).forEach((rd,i)=>{const t=TASKS[rd.k],x=act[pi][i];
+      body+=`<tr><td class="lbl">${rd.g}${x&&!x.done?' <small class="muted">進行中</small>':""}</td>${days.map(d=>{const on=x&&d>=x.s&&d<=x.e;const off=!isWork(d,H);
+        const cls=["cell",on?"on":off?"off":"",on&&fmt(d)===fmt(x.s)?"first":"",on&&fmt(d)===fmt(x.e)?"last":"",fmt(d)===today?"today":""].join(" ");
+        const bg=on?(x.done?`background:var(--p${t.p})`:`background:repeating-linear-gradient(45deg,var(--p${t.p}) 0 4px,transparent 4px 7px);opacity:.75`):"";
+        return`<td class="${cls}" ${on?`style="${bg}" title="${t.it}：${show(x.s)}–${x.done?show(x.e):"進行中（至今日）"}"`:""}></td>`}).join("")}</tr>`;
     });
   });
-  return `<section class="card dark">${hdr("bars","各產品甘特圖")}
-  <div class="legend" style="margin-top:12px">${PHASES.map(ph=>`<span><i style="background:var(--p${ph.n})"></i>${ph.n}. ${ph.t.replace("完成","")}</span>`).join("")}<span><i style="background:#efefea;border:1px solid #ddd"></i>週末／假日</span></div>
+  return `<section class="card dark">${hdr("bars","各產品甘特圖（實際進度）")}
+  <p class="muted" style="margin:10px 16px 0">依各作業的「實際開始／實際完成」上色；只填了實際開始的作業以斜紋表示進行中，畫到今天；尚未填實際日期的作業不顯示色帶。</p>
+  <div class="legend" style="margin-top:12px">${PHASES.map(ph=>`<span><i style="background:var(--p${ph.n})"></i>${ph.n}. ${ph.t.replace("完成","")}</span>`).join("")}<span><i style="background:repeating-linear-gradient(45deg,#888 0 3px,transparent 3px 6px)"></i>進行中</span><span><i style="background:#efefea;border:1px solid #ddd"></i>週末／假日</span></div>
   <div class="scroll"><table class="gantt"><tr><th class="lbl">作業項目</th>${head}</tr>${body}</table></div></section>`;
+}
+function vSupplies(){
+  const L=(S.supplies=S.supplies||[]);
+  const groups=[];L.forEach((x,i)=>{let g=groups.find(g=>g.it===(x.it||""));if(!g)groups.push(g={it:x.it||"",ix:[]});g.ix.push(i)});
+  const first=g=>g.ix.map(i=>L[i].d||"9999").sort()[0];
+  groups.sort((a,b)=>first(a).localeCompare(first(b)));
+  const blk=g=>{const ix=g.ix.slice().sort((a,b)=>(L[a].d||"9999").localeCompare(L[b].d||"9999"));
+    const tot=ix.reduce((a,i)=>a+(+L[i].q||0),0);
+    return `<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:10px;margin:4px 0 8px">
+      <b style="color:var(--deep,#24452c)">品項</b><input data-spg="${esc(g.it)}" value="${esc(g.it)}" placeholder="輸入品項名稱" style="min-width:200px;font-weight:700">
+      <span class="muted">累計</span><b>${tot.toLocaleString()}</b></div>
+    <div class="scroll"><table class="std">
+    <tr><th>購入日期</th><th class="c">數量</th><th>單位</th><th>備註</th><th class="c noprint"></th></tr>
+    ${ix.map(i=>{const x=L[i];return`<tr><td><input type="date" data-sp="${i}" data-sk="d" value="${x.d||""}"></td><td class="c"><input type="number" min="0" data-sp="${i}" data-sk="q" value="${x.q??""}" style="width:90px"></td><td><input data-sp="${i}" data-sk="unit" value="${esc(x.unit||"")}" style="width:50px"></td><td><input data-sp="${i}" data-sk="note" value="${esc(x.note||"")}" style="width:100%"></td><td class="c noprint"><button class="btn" data-spdel="${i}">刪除</button></td></tr>`}).join("")}
+    <tr class="tot"><td>小計</td><td class="c">${tot.toLocaleString()}</td><td>${esc((L[ix[0]]||{}).unit||"")}</td><td></td><td class="noprint"></td></tr>
+    </table></div><p class="noprint" style="margin:6px 0 0"><button class="btn" data-spadd="${esc(g.it)}">＋ 新增一筆${g.it?`（${esc(g.it)}）`:""}</button></p></div>`};
+  return `<section class="card dark">${hdr("cube","耗材用品購買紀錄")}
+  <div class="pad">${groups.map(blk).join("")}
+  <p class="noprint"><button class="btn pri" id="spAdd">＋ 新增品項</button></p></div></section>`;
 }
 function vHolidays(){
   return `<section class="card dark">${hdr("cal".replace("cal","doc"),"國定假日／不作業日")}
@@ -472,11 +497,14 @@ function render(){
   }).join("");
 }
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-v],[data-go],[data-pclear],[data-hdel],#hAdd,#printBtn,#resetBtn");if(!t)return;
+  const t=e.target.closest("[data-v],[data-go],[data-pclear],[data-hdel],[data-spdel],[data-spadd],#spAdd,#hAdd,#printBtn,#resetBtn");if(!t)return;
   if(t.dataset.v){cur=t.dataset.v;try{sessionStorage.setItem(KEY+"tab",cur)}catch(_){}render();window.scrollTo(0,0)}
   else if(t.dataset.go){e.preventDefault();cur=BASE(t.dataset.go);render()}
   else if(t.dataset.pclear){S.prod[t.dataset.pclear].start="";save();render()}
   else if(t.dataset.hdel){S.holidays.splice(+t.dataset.hdel,1);save();render()}
+  else if(t.dataset.spdel){S.supplies.splice(+t.dataset.spdel,1);save();render()}
+  else if(t.dataset.spadd!==undefined){const g=t.dataset.spadd,u=(S.supplies.find(x=>(x.it||"")===g)||{}).unit||"個";S.supplies.push({d:"",it:g,q:"",unit:u,note:""});save();render()}
+  else if(t.id==="spAdd"){if(!S.supplies.some(x=>!x.it))S.supplies.push({d:"",it:"",q:"",unit:"個",note:""});save();render()}
   else if(t.id==="hAdd"){S.holidays.push({d:"",n:""});save();render()}
   else if(t.id==="printBtn"){window.print()}
   else if(t.id==="resetBtn"){if(confirm("確定要清除所有填寫內容並恢復預設值？")){S=initial();save();render()}}
@@ -496,6 +524,8 @@ document.addEventListener("change",e=>{
     if(d.k==="as"&&t.value&&(!r.st||r.st==="未開始"))r.st="進行中";
   }
   else if(d.h!==undefined){S.holidays[+d.h][d.hk]=t.value}
+  else if(d.spg!==undefined){const nv=t.value.trim();S.supplies.forEach(x=>{if((x.it||"")===d.spg)x.it=nv})}
+  else if(d.sp!==undefined){const x=S.supplies[+d.sp];x[d.sk]=d.sk==="q"?(t.value===""?"":Math.max(0,+t.value)):t.value}
   else return;
   save();render();
 });
