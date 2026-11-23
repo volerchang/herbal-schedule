@@ -267,6 +267,8 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-24-qingshen1-bags",fn:S=>{const G=S.prod["清神元氣"];if(!G)return;const i=ROWDEF("清神元氣").findIndex(rd=>rd.k===PACK);if(i<0||!G.rows[i])return;if(G.rows[i].bags===undefined||G.rows[i].bags==="")G.rows[i].bags=245;}},
+  {id:"2026-11-24-desiccant",fn:S=>{S.supplies=S.supplies||[];if(!S.supplies.some(x=>x.it==="5克乾燥劑"&&x.d==="2026-10-12"))S.supplies.push({d:"2026-10-12",it:"5克乾燥劑",q:5000,unit:"個",note:"首次購入"});}},
   {id:"2026-11-23-fuzao-prep-done",fn:S=>{const J=S.prod["茯棗日安"];if(!J||!J.rows[0])return;const r=J.rows[0];if(!r.as)r.as="2026-11-16";r.ae="2026-11-17";r.st="完成";}},
   {id:"2026-11-23-fuzao-jixiang-start",fn:S=>{const J=S.prod["茯棗日安"];if(!J||J.rows.length!==7)return;const r=J.rows[1];r.as="2026-11-26";if(!r.ae)r.st="未開始";}},
   {id:"2026-11-23-qishen2-jixiang-start",fn:S=>{const J=S.prod["耆參元氣 第2批"];if(!J||J.rows.length!==7)return;const r=J.rows[1];r.as="2026-11-26";if(!r.ae)r.st="未開始";}},
@@ -497,16 +499,24 @@ function vSupplies(){
   const groups=[];L.forEach((x,i)=>{let g=groups.find(g=>g.it===(x.it||""));if(!g)groups.push(g={it:x.it||"",ix:[]});g.ix.push(i)});
   const first=g=>g.ix.map(i=>L[i].d||"9999").sort()[0];
   groups.sort((a,b)=>first(a).localeCompare(first(b)));
+  const use=(S.supUse=S.supUse||{});
+  // 用量規則：六兩開窗牛皮袋＝清神元氣以外各產品成品袋數；四兩開窗牛皮袋＝清神元氣成品袋數（1 袋用 1 個）
+  const ruleOf=it=>/六兩/.test(it||"")?(p=>BASE(p)!=="清神元氣"):/四兩/.test(it||"")?(p=>BASE(p)==="清神元氣"):/乾燥劑/.test(it||"")?(p=>true):null;
+  const usedOf=it=>{const f=ruleOf(it);return f?PRODUCTS.filter(f).reduce((a,p)=>a+(bagsOf(p)||0),0):null};
   const blk=g=>{const ix=g.ix.slice().sort((a,b)=>(L[a].d||"9999").localeCompare(L[b].d||"9999"));
     const tot=ix.reduce((a,i)=>a+(+L[i].q||0),0);
     return `<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:10px;margin:4px 0 8px">
       <b style="color:var(--deep,#24452c)">品項</b><input data-spg="${esc(g.it)}" value="${esc(g.it)}" placeholder="輸入品項名稱" style="min-width:200px;font-weight:700">
-      <span class="muted">累計</span><b>${tot.toLocaleString()}</b></div>
+      <span class="muted">累計購入</span><b>${tot.toLocaleString()}</b>
+      ${usedOf(g.it)===null?"":`<span class="muted">已使用</span><b>${usedOf(g.it).toLocaleString()}</b>
+      <span class="muted">剩餘</span><b style="font-size:1.15em;color:${tot-usedOf(g.it)<0?"#b33":"#1f6b3a"}">${(tot-usedOf(g.it)).toLocaleString()}</b>`}</div>
+    ${usedOf(g.it)===null?"":`<p class="muted" style="margin:0 0 6px;font-size:.85em">已使用＝${/六兩/.test(g.it)?"清神元氣以外各產品「已包裝袋數」合計（1 袋用 1 個）":/四兩/.test(g.it)?"清神元氣「已包裝袋數」合計（1 袋用 1 個）":"六兩袋＋四兩袋已使用量合計（所有產品已包裝袋數，1 袋用 1 個）"}</p>`}
     <div class="scroll"><table class="std">
     <tr><th>購入日期</th><th class="c">數量</th><th>單位</th><th>備註</th><th class="c noprint"></th></tr>
     ${ix.map(i=>{const x=L[i];return`<tr><td><input type="date" data-sp="${i}" data-sk="d" value="${x.d||""}"></td><td class="c"><input type="number" min="0" data-sp="${i}" data-sk="q" value="${x.q??""}" style="width:90px"></td><td><input data-sp="${i}" data-sk="unit" value="${esc(x.unit||"")}" style="width:50px"></td><td><input data-sp="${i}" data-sk="note" value="${esc(x.note||"")}" style="width:100%"></td><td class="c noprint"><button class="btn" data-spdel="${i}">刪除</button></td></tr>`}).join("")}
     <tr class="tot"><td>小計</td><td class="c">${tot.toLocaleString()}</td><td>${esc((L[ix[0]]||{}).unit||"")}</td><td></td><td class="noprint"></td></tr>
     </table></div><p class="noprint" style="margin:6px 0 0"><button class="btn" data-spadd="${esc(g.it)}">＋ 新增一筆${g.it?`（${esc(g.it)}）`:""}</button></p></div>`};
+  const items=groups.map(g=>g.it).filter(Boolean);
   return `<section class="card dark">${hdr("cube","耗材用品購買紀錄")}
   <div class="pad">${groups.map(blk).join("")}
   <p class="noprint"><button class="btn pri" id="spAdd">＋ 新增品項</button></p></div></section>`;
@@ -554,7 +564,8 @@ document.addEventListener("change",e=>{
     if(d.k==="as"&&t.value&&(!r.st||r.st==="未開始"))r.st="進行中";
   }
   else if(d.h!==undefined){S.holidays[+d.h][d.hk]=t.value}
-  else if(d.spg!==undefined){const nv=t.value.trim();S.supplies.forEach(x=>{if((x.it||"")===d.spg)x.it=nv})}
+  else if(d.su!==undefined){S.supUse=S.supUse||{};const m=(S.supUse[d.sui]=S.supUse[d.sui]||{});if(t.value==="")delete m[d.su];else m[d.su]=Math.max(0,+t.value)}
+  else if(d.spg!==undefined){const nv=t.value.trim();S.supplies.forEach(x=>{if((x.it||"")===d.spg)x.it=nv});S.supUse=S.supUse||{};if(S.supUse[d.spg]&&nv&&nv!==d.spg){S.supUse[nv]=S.supUse[d.spg];delete S.supUse[d.spg]}}
   else if(d.sp!==undefined){const x=S.supplies[+d.sp];x[d.sk]=d.sk==="q"?(t.value===""?"":Math.max(0,+t.value)):t.value}
   else return;
   save();render();
