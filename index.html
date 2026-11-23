@@ -267,6 +267,7 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-23-fuzao-prep-done",fn:S=>{const J=S.prod["茯棗日安"];if(!J||!J.rows[0])return;const r=J.rows[0];if(!r.as)r.as="2026-11-16";r.ae="2026-11-17";r.st="完成";}},
   {id:"2026-11-23-fuzao-jixiang-start",fn:S=>{const J=S.prod["茯棗日安"];if(!J||J.rows.length!==7)return;const r=J.rows[1];r.as="2026-11-26";if(!r.ae)r.st="未開始";}},
   {id:"2026-11-23-qishen2-jixiang-start",fn:S=>{const J=S.prod["耆參元氣 第2批"];if(!J||J.rows.length!==7)return;const r=J.rows[1];r.as="2026-11-26";if(!r.ae)r.st="未開始";}},
   {id:"2026-11-23-fuzao-hongxiang-start",fn:S=>{const J=S.prod["茯棗日安"];if(!J||J.rows.length!==7)return;const r=J.rows[2];if(!r.as)r.as="2026-11-17";if(!r.ae&&(!r.st||r.st==="未開始"))r.st="進行中";}},
