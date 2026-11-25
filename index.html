@@ -175,7 +175,7 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;display:flex;justify-co
 </div>
 
 <script>
-const PRODUCTS=["酸棗眠雲","酸棗眠雲 第2批","寬心順氣","荷風拂透","清神元氣","清神元氣 第2批","耆參元氣","耆參元氣 第2批","茯棗日安"];
+const PRODUCTS=["酸棗眠雲","酸棗眠雲 第2批","寬心順氣","寬心順氣 第2批","荷風拂透","荷風拂透 第2批","清神元氣","清神元氣 第2批","耆參元氣","耆參元氣 第2批","茯棗日安"];
 const BASE=p=>p.split(" ")[0];
 const BATCHDEF=p=>{const m=p.match(/第(\d+)批/);return m?`第${m[1]}批`:"第1批"};
 const EMOJI={"酸棗眠雲":"🌿","寬心順氣":"🌼","荷風拂透":"🪷","清神元氣":"🍃","耆參元氣":"🌱","茯棗日安":"🌤️"};
@@ -192,7 +192,7 @@ const PHASES=[
  {n:4,t:"茶包製作完成",ic:"bag"},{n:5,t:"貼紙印刷完成",ic:"tag"},{n:6,t:"包裝完成",ic:"box"}];
 const PLAST=[1,2,3,4,5,6].map(n=>TASKS.reduce((a,t,i)=>t.p===n?i:a,-1));
 const PACK=5;  // TASKS 索引：6 茶包包裝
-const SPLIT={"寬心順氣":{1:["吉翔","宏翔"],4:[{unit:"健豪",tag:"第一次"},{unit:"健豪",tag:"第二次"}],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"},{unit:"中藥局",tag:"第三次"}]},"荷風拂透":{1:["吉翔","宏翔"],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"},{unit:"中藥局",tag:"第三次"},{unit:"中藥局",tag:"第四次"}]},"耆參元氣":{1:["吉翔","宏翔"]},"清神元氣 第2批":{1:["吉翔","宏翔"]},"茯棗日安":{1:["吉翔","宏翔"]},"酸棗眠雲 第2批":{1:["吉翔","中藥局"]},"酸棗眠雲":{5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"}]}};
+const SPLIT={"寬心順氣 第2批":{1:["吉翔","宏翔"]},"荷風拂透 第2批":{1:["吉翔","宏翔"]},"寬心順氣":{1:["吉翔","宏翔"],4:[{unit:"健豪",tag:"第一次"},{unit:"健豪",tag:"第二次"}],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"},{unit:"中藥局",tag:"第三次"}]},"荷風拂透":{1:["吉翔","宏翔"],5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"},{unit:"中藥局",tag:"第三次"},{unit:"中藥局",tag:"第四次"},{unit:"中藥局",tag:"第五次"}]},"耆參元氣":{1:["吉翔","宏翔"]},"清神元氣 第2批":{1:["吉翔","宏翔"]},"茯棗日安":{1:["吉翔","宏翔"]},"酸棗眠雲 第2批":{1:["吉翔","中藥局"]},"酸棗眠雲":{5:[{unit:"中藥局",tag:"第一次"},{unit:"中藥局",tag:"第二次"},{unit:"中藥局",tag:"第三次"},{unit:"中藥局",tag:"第四次"}]}};
 const ITEMOVR={"清神元氣":{3:"送茶包代工廠投料製作"}};
 const SKIP={"酸棗眠雲 第2批":[4]};  // 該批不需執行的作業（第2批貼紙沿用第1批）
 const ROWDEF=p=>{const out=[];TASKS.forEach((t,k)=>{if((SKIP[p]||[]).includes(k))return;const vs=(SPLIT[p]||SPLIT[BASE(p)]||{})[k];
@@ -259,14 +259,21 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
   {const K=S.prod["寬心順氣"];if(K&&K.rows&&K.rows.length===7)K.rows.splice(6,0,{days:"",unit:"",as:"",ae:"",st:K.start?"未開始":"",note:""});}
   if(S.std&&S.std.length===TASKS.length-1){S.std=[...S.std.slice(0,4),3,S.std[4]];}
   {const nr=u=>({days:"",unit:u,as:"",ae:"",st:"未開始",note:""});
-   const H=S.prod["荷風拂透"];if(H&&H.rows&&H.rows.length===8)H.rows.push(nr("中藥局"),nr("中藥局"));
+   const H=S.prod["荷風拂透"];if(H&&H.rows&&H.rows.length===8)H.rows.push(nr("中藥局"),nr("中藥局"));if(H&&H.rows&&H.rows.length===10)H.rows.push(nr("中藥局"));
    const K=S.prod["寬心順氣"];if(K&&K.rows&&K.rows.length===9)K.rows.push(nr("中藥局"),nr("中藥局"));
-   const Z=S.prod["酸棗眠雲"];if(Z&&Z.rows&&Z.rows.length===6)Z.rows.push(nr("中藥局"));
+   const Z=S.prod["酸棗眠雲"];if(Z&&Z.rows&&Z.rows.length===6)Z.rows.push(nr("中藥局"));if(Z&&Z.rows&&Z.rows.length===7)Z.rows.push(nr("中藥局"));if(Z&&Z.rows&&Z.rows.length===8)Z.rows.push(nr("中藥局"));
    S.mig=S.mig||{};if(K&&K.rows&&K.rows.length===11&&!S.mig.k522){K.rows.splice(8,1);}S.mig.k522=1;}  // 刪除寬心 5-2-2（11/18）
   PRODUCTS.forEach(p=>{const P=S.prod[p],defs=ROWDEF(p);if(!P||!P.rows)return;
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-26-kx2-hf2-qty",fn:S=>{[["寬心順氣 第2批",10000],["荷風拂透 第2批",8000]].forEach(([p,q])=>{const P=S.prod[p];if(P&&(P.qty===undefined||P.qty===null||P.qty===""))P.qty=q;});}},
+  {id:"2026-11-26-kx2-hf2-start",fn:S=>{["寬心順氣 第2批","荷風拂透 第2批"].forEach(p=>{const P=S.prod[p];if(!P)return;if(!P.start){P.start="2026-11-26";P.rows.forEach(r=>{if(!r.st)r.st="未開始";});}const r=P.rows[0];if(r&&!r.as){r.as="2026-11-26";if(!r.ae)r.st="進行中";}});}},
+  {id:"2026-11-26-hf-pack5",fn:S=>{const H=S.prod["荷風拂透"];if(!H||H.rows.length!==11)return;const r=H.rows[10];if(!r.as)r.as="2026-11-25";if(!r.ae)r.ae="2026-11-25";if(r.bags===undefined||r.bags==="")r.bags=50;r.unit=r.unit||"中藥局";r.st="完成";}},
+  {id:"2026-11-26-qishen-tea-done",fn:S=>{const J=S.prod["耆參元氣"];if(!J)return;const i=ROWDEF("耆參元氣").findIndex(rd=>rd.k===3);const r=J.rows[i];if(!r)return;if(!r.as)r.as="2026-11-19";r.ae="2026-11-26";r.st="完成";}},
+  {id:"2026-11-26-zz2-tea-done",fn:S=>{const Z=S.prod["酸棗眠雲 第2批"];if(!Z)return;const i=ROWDEF("酸棗眠雲 第2批").findIndex(rd=>rd.k===3);const r=Z.rows[i];if(!r)return;if(!r.as)r.as="2026-11-17";r.ae="2026-11-26";r.st="完成";}},
+  {id:"2026-11-26-zz-pack4",fn:S=>{const Z=S.prod["酸棗眠雲"];if(!Z||Z.rows.length!==9)return;const r=Z.rows[8];if(!r.as)r.as="2026-11-25";if(!r.ae)r.ae="2026-11-25";if(!r.note)r.note="減糖版";if(r.bags===undefined||r.bags==="")r.bags=16;r.unit=r.unit||"中藥局";r.st="完成";}},
+  {id:"2026-11-26-zz-pack3",fn:S=>{const Z=S.prod["酸棗眠雲"];if(!Z||Z.rows.length<8)return;const r=Z.rows[7];if(!r.as)r.as="2026-11-24";if(!r.ae)r.ae="2026-11-24";if(!r.note)r.note="減糖版";if(r.bags===undefined||r.bags==="")r.bags=84;r.unit=r.unit||"中藥局";r.st="完成";}},
   {id:"2026-11-24-qingshen1-bags",fn:S=>{const G=S.prod["清神元氣"];if(!G)return;const i=ROWDEF("清神元氣").findIndex(rd=>rd.k===PACK);if(i<0||!G.rows[i])return;if(G.rows[i].bags===undefined||G.rows[i].bags==="")G.rows[i].bags=245;}},
   {id:"2026-11-24-desiccant",fn:S=>{S.supplies=S.supplies||[];if(!S.supplies.some(x=>x.it==="5克乾燥劑"&&x.d==="2026-10-12"))S.supplies.push({d:"2026-10-12",it:"5克乾燥劑",q:5000,unit:"個",note:"首次購入"});}},
   {id:"2026-11-23-fuzao-prep-done",fn:S=>{const J=S.prod["茯棗日安"];if(!J||!J.rows[0])return;const r=J.rows[0];if(!r.as)r.as="2026-11-16";r.ae="2026-11-17";r.st="完成";}},
@@ -283,9 +290,9 @@ const PATCHES=[
   {id:"2026-11-23-qishen2-prep",fn:S=>{const r=S.prod["耆參元氣 第2批"]&&S.prod["耆參元氣 第2批"].rows[0];if(r){if(!r.as)r.as="2026-11-18";if(!r.ae)r.ae="2026-11-18";r.st="完成";}}},
   {id:"2026-11-23-qishen-prep-start",fn:S=>{const r=S.prod["耆參元氣"]&&S.prod["耆參元氣"].rows[0];if(r&&!r.as)r.as="2026-11-09";}},
   {id:"2026-11-23-pack-more",fn:S=>{const set=(p,i,d,n)=>{const P=S.prod[p];if(!P||!P.rows[i])return;const r=P.rows[i];if(!r.as)r.as=d;if(!r.ae)r.ae=d;if(!r.note)r.note=n;if(!r.unit)r.unit="中藥局";r.st="完成";};
-    const Z=S.prod["酸棗眠雲"];if(Z&&Z.rows.length===7)set("酸棗眠雲",6,"2026-11-20","70袋（減糖版）");
+    const Z=S.prod["酸棗眠雲"];if(Z&&Z.rows.length>=7)set("酸棗眠雲",6,"2026-11-20","70袋（減糖版）");
     const K=S.prod["寬心順氣"];if(K&&K.rows.length===10){set("寬心順氣",8,"2026-11-19","200袋");set("寬心順氣",9,"2026-11-20","53袋");}
-    const H=S.prod["荷風拂透"];if(H&&H.rows.length===10){set("荷風拂透",8,"2026-11-19","86袋");set("荷風拂透",9,"2026-11-20","50袋");}}},
+    const H=S.prod["荷風拂透"];if(H&&H.rows.length>=10){set("荷風拂透",8,"2026-11-19","86袋");set("荷風拂透",9,"2026-11-20","50袋");}}},
   {id:"2026-11-21-supplies",fn:S=>{S.supplies=S.supplies||[];[["2026-10-12","六兩開窗牛皮袋",3500],["2026-11-23","六兩開窗牛皮袋",3500],["2026-11-16","四兩開窗牛皮袋",500]].forEach(([d,it,q])=>{if(!S.supplies.some(x=>x.d===d&&x.it===it))S.supplies.push({d,it,q,unit:"個",note:""});});}},
   {id:"2026-11-21-qishen-hongxiang-done",fn:S=>{const J=S.prod["耆參元氣"];if(!J||J.rows.length!==7)return;const r=J.rows[2];if(!r.ae)r.ae="2026-11-18";r.st="完成";}},
   {id:"2026-11-19-qishen-mix-tea",fn:S=>{const J=S.prod["耆參元氣"];if(!J||J.rows.length!==7)return;const m=J.rows[3],t=J.rows[4];if(!m.as)m.as="2026-11-19";if(!m.ae)m.ae="2026-11-19";m.st="完成";if(!t.as)t.as="2026-11-19";if(!t.st||t.st==="未開始")t.st="進行中";}},
