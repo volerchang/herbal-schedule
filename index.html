@@ -267,6 +267,7 @@ try{S=JSON.parse(localStorage.getItem(KEY))||initial()}catch(e){S=initial()}
     if(P.rows.length===defs.length-1){const at=defs.length-2;P.rows.splice(at,0,{days:"",unit:"",as:"",ae:"",st:P.start?"未開始":"",note:""});}});
 }catch(e){}})();
 const PATCHES=[
+  {id:"2026-11-26-qishen-lot-zz2-note",fn:S=>{const J=S.prod["耆參元氣"];if(J&&!J.lot)J.lot="100101261125";const Z=S.prod["酸棗眠雲 第2批"];if(!Z)return;const i=ROWDEF("酸棗眠雲 第2批").findIndex(rd=>rd.k===3);const r=Z.rows[i];if(r&&!r.note)r.note="照射日期2026/11/25";}},
   {id:"2026-11-26-kx2-hf2-qty",fn:S=>{[["寬心順氣 第2批",10000],["荷風拂透 第2批",8000]].forEach(([p,q])=>{const P=S.prod[p];if(P&&(P.qty===undefined||P.qty===null||P.qty===""))P.qty=q;});}},
   {id:"2026-11-26-kx2-hf2-start",fn:S=>{["寬心順氣 第2批","荷風拂透 第2批"].forEach(p=>{const P=S.prod[p];if(!P)return;if(!P.start){P.start="2026-11-26";P.rows.forEach(r=>{if(!r.st)r.st="未開始";});}const r=P.rows[0];if(r&&!r.as){r.as="2026-11-26";if(!r.ae)r.st="進行中";}});}},
   {id:"2026-11-26-hf-pack5",fn:S=>{const H=S.prod["荷風拂透"];if(!H||H.rows.length!==11)return;const r=H.rows[10];if(!r.as)r.as="2026-11-25";if(!r.ae)r.ae="2026-11-25";if(r.bags===undefined||r.bags==="")r.bags=50;r.unit=r.unit||"中藥局";r.st="完成";}},
